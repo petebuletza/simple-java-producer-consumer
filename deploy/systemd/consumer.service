@@ -8,10 +8,33 @@ Type=simple
 User=datapipe
 Group=datapipe
 WorkingDirectory=/opt/producer-consumer-service
-ExecStart=/usr/bin/java -jar /opt/producer-consumer-service/producer-consumer-service-1.0.0.jar --mode=consumer --producer-port=9000 --api-port=8081 --reconnect-ms=1000
+# %%p is escaped so systemd passes a literal %p through to the JVM, which expands
+# it to the PID itself; ProtectSystem=strict below leaves WorkingDirectory
+# read-only, so a crash dump has to land somewhere writable instead.
+ExecStart=/usr/bin/java -XX:ErrorFile=/tmp/hs_err_pid%%p.log -jar /opt/producer-consumer-service/producer-consumer-service-1.0.0.jar --mode=consumer --producer-port=9000 --api-port=8081 --reconnect-ms=1000
 Restart=on-failure
 RestartSec=2
 SuccessExitStatus=0 143
+
+# --- Sandboxing ---
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+UMask=0077
 
 [Install]
 WantedBy=multi-user.target
