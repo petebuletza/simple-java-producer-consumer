@@ -7,6 +7,8 @@ import java.util.Map;
 public final class Main {
     private Main() {}
 
+    static final String LOOPBACK = "127.0.0.1";
+
     public static void main(String[] args) throws Exception {
         Map<String, String> options = parseArgs(args);
         String mode = required(options, "mode");
@@ -52,5 +54,13 @@ public final class Main {
 
     static Duration durationMs(Map<String, String> options, String key, long defaultValue) {
         return Duration.ofMillis(longOption(options, key, defaultValue));
+    }
+
+    static void rejectHostOption(Map<String, String> options, String key) {
+        if (options.containsKey(key)) {
+            throw new IllegalArgumentException(
+                    "--" + key + " is not supported: this service only binds to " + LOOPBACK
+                            + " for security. Only ports are configurable.");
+        }
     }
 }

@@ -50,10 +50,11 @@ The consumer may be started before the producer; it will retry the TCP connectio
 
 ## Producer options
 
+Both ports are always bound to `127.0.0.1` — see [Security](#security).
+
 ```text
 --mode=producer
 --data-port=9000
---api-host=127.0.0.1
 --api-port=8080
 --frequency-ms=1000
 ```
@@ -66,11 +67,11 @@ java -jar build/libs/producer-consumer-service-1.0.0.jar   --mode=producer   --f
 
 ## Consumer options
 
+Both ports are always bound to `127.0.0.1` — see [Security](#security).
+
 ```text
 --mode=consumer
---producer-host=127.0.0.1
 --producer-port=9000
---api-host=127.0.0.1
 --api-port=8081
 --reconnect-ms=1000
 ```
@@ -78,7 +79,7 @@ java -jar build/libs/producer-consumer-service-1.0.0.jar   --mode=producer   --f
 Example:
 
 ```bash
-java -jar build/libs/producer-consumer-service-1.0.0.jar   --mode=consumer   --producer-host=127.0.0.1   --producer-port=9000   --api-port=8081
+java -jar build/libs/producer-consumer-service-1.0.0.jar   --mode=consumer   --producer-port=9000   --api-port=8081
 ```
 
 ## APIs
@@ -125,7 +126,11 @@ curl -X POST http://127.0.0.1:8080/api/shutdown
 curl -X POST http://127.0.0.1:8081/api/shutdown
 ```
 
-The shutdown endpoint is deliberately bound to loopback by default. If you expose the API beyond localhost, put authentication/network controls in front of it.
+## Security
+
+Every listener — the producer's TCP data port, and both services' HTTP APIs — is hardcoded to bind to `127.0.0.1` and cannot be changed. `--bind-host`, `--api-host`, and `--producer-host` are not accepted; passing any of them fails fast with an error instead of silently being ignored. Only ports are configurable.
+
+This is a deliberate tradeoff, not an oversight: none of the HTTP endpoints (including `/api/shutdown`) require authentication, and the TCP wire protocol has no auth or encryption, so loopback-only binding is the only thing standing between these services and anyone who can reach the port. If you need to reach them from another host, put a reverse proxy or SSH tunnel in front that adds its own authentication — do not fork this code to accept a non-loopback host.
 
 ## Service deployment
 
