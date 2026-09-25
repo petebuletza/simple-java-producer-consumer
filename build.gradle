@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.example'
+version = providers.gradleProperty('version').orElse('0.0.0-SNAPSHOT').get()
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(26)
+    }
+}
+
+application {
+    mainClass = 'com.example.datapipe.Main'
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.named('jar') {
+    archiveBaseName = 'producer-consumer-service'
+    manifest {
+        attributes(
+            'Main-Class': application.mainClass.get(),
+            'Implementation-Version': project.version
+        )
+    }
+}
+
+tasks.named('run') {
+    standardInput = System.in
+}

@@ -1,0 +1,56 @@
+package com.example.datapipe;
+
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+
+public final class Main {
+    private Main() {}
+
+    public static void main(String[] args) throws Exception {
+        Map<String, String> options = parseArgs(args);
+        String mode = required(options, "mode");
+
+        switch (mode.toLowerCase()) {
+            case "producer" -> new ProducerService(ProducerConfig.from(options)).startAndWait();
+            case "consumer" -> new ConsumerService(ConsumerConfig.from(options)).startAndWait();
+            default -> throw new IllegalArgumentException("mode must be 'producer' or 'consumer'");
+        }
+    }
+
+    static Map<String, String> parseArgs(String[] args) {
+        Map<String, String> options = new HashMap<>();
+        for (String arg : args) {
+            if (!arg.startsWith("--")) {
+                throw new IllegalArgumentException("Invalid argument: " + arg);
+            }
+            int equals = arg.indexOf('=');
+            if (equals < 0) {
+                options.put(arg.substring(2), "true");
+            } else {
+                options.put(arg.substring(2, equals), arg.substring(equals + 1));
+            }
+        }
+        return options;
+    }
+
+    static String required(Map<String, String> options, String key) {
+        String value = options.get(key);
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Missing required option --" + key + "=...");
+        }
+        return value;
+    }
+
+    static int intOption(Map<String, String> options, String key, int defaultValue) {
+        return Integer.parseInt(options.getOrDefault(key, Integer.toString(defaultValue)));
+    }
+
+    static long longOption(Map<String, String> options, String key, long defaultValue) {
+        return Long.parseLong(options.getOrDefault(key, Long.toString(defaultValue)));
+    }
+
+    static Duration durationMs(Map<String, String> options, String key, long defaultValue) {
+        return Duration.ofMillis(longOption(options, key, defaultValue));
+    }
+}

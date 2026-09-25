@@ -1,0 +1,79 @@
+# Gradle
+.gradle/
+.gradle-dist/
+build/
+
+# Gradle build cache
+**/.gradle/
+
+# Java
+*.class
+*.log
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# VS Code
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+.nb-gradle/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS/editor backup files
+*.bak
+*.orig
+
+# Generated artifacts
+*.jar
+*.war
+*.ear
+
+# Keep the Gradle wrapper JAR in source control
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration / environment
+.env
+.env.*
+!.env.example
+
+# Local service/runtime files
+*.pid
+*.pid.lock
+
+# Test reports
+test-results/

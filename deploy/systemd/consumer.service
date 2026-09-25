@@ -1,0 +1,17 @@
+[Unit]
+Description=Random Data Consumer
+After=network.target producer.service
+Wants=producer.service
+
+[Service]
+Type=simple
+User=datapipe
+Group=datapipe
+WorkingDirectory=/opt/producer-consumer-service
+ExecStart=/usr/bin/java -jar /opt/producer-consumer-service/producer-consumer-service-1.0.0.jar --mode=consumer --producer-host=127.0.0.1 --producer-port=9000 --api-host=127.0.0.1 --api-port=8081 --reconnect-ms=1000
+Restart=on-failure
+RestartSec=2
+SuccessExitStatus=0 143
+
+[Install]
+WantedBy=multi-user.target
