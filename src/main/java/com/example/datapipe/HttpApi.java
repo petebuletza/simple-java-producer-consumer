@@ -32,6 +32,11 @@ final class HttpApi implements AutoCloseable {
         server.start();
     }
 
+    /** The actual bound port, useful when constructed with an ephemeral port of {@code 0}. */
+    int port() {
+        return server.getAddress().getPort();
+    }
+
     private void stats(HttpExchange exchange) throws IOException {
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             send(exchange, 405, "{\"error\":\"method not allowed\"}");
