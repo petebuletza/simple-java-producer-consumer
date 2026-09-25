@@ -45,8 +45,14 @@ final class ConsumerService {
                 String line;
                 while (running.get() && (line = reader.readLine()) != null) {
                     if (line.isBlank()) continue;
-                    DataItem item = DataItem.fromWireLine(line);
-                    stats.record(item, Instant.now());
+                    try {
+                        DataItem item = DataItem.fromWireLine(line);
+                        stats.record(item, Instant.now());
+                    } catch (RuntimeException e) {
+                        // A single corrupt line shouldn't tear down and reconnect the
+                        // whole connection; skip it and keep reading.
+                        System.err.println("Discarding malformed wire line: " + e.getMessage());
+                    }
                 }
             } catch (Exception e) {
                 if (running.get()) {
