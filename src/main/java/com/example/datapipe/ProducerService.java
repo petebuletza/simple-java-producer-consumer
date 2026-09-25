@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 final class ProducerService {
+    private static final int MAX_CLIENTS = 10;
+
     private final ProducerConfig config;
     private final Stats stats = new Stats();
     private final Set<Client> clients = ConcurrentHashMap.newKeySet();
@@ -55,6 +57,12 @@ final class ProducerService {
         while (running.get()) {
             try {
                 Socket socket = serverSocket.accept();
+                if (clients.size() >= MAX_CLIENTS) {
+                    System.err.println("Client limit (" + MAX_CLIENTS + ") reached; rejecting "
+                            + socket.getRemoteSocketAddress());
+                    try { socket.close(); } catch (IOException ignored) {}
+                    continue;
+                }
                 socket.setTcpNoDelay(true);
                 Client client = new Client(socket, clients);
                 clients.add(client);
