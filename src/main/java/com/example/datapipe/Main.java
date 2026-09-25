@@ -5,11 +5,26 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Command-line entry point that dispatches to {@link ProducerService} or
+ * {@link ConsumerService} based on the required {@code --mode} option.
+ *
+ * <p>{@code ProducerService} and {@code ConsumerService} each also expose their
+ * own {@code main} method for running a specific mode directly by classname,
+ * without the {@code --mode} flag.
+ */
 public final class Main {
     private Main() {}
 
     static final String LOOPBACK = "127.0.0.1";
 
+    /**
+     * Parses {@code args}, then starts the producer or consumer service named
+     * by the required {@code --mode} option.
+     *
+     * @param args command-line arguments in {@code --key=value} form
+     * @throws Exception if the selected service fails to start
+     */
     public static void main(String[] args) throws Exception {
         Map<String, String> options = parseArgs(args);
         String mode = required(options, "mode");

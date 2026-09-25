@@ -16,6 +16,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Runs the producer role: generates random {@link DataItem}s on a fixed
+ * schedule, fans them out over a newline-delimited TCP stream to up to 10
+ * connected consumers, and exposes an HTTP API for health, statistics, and
+ * shutdown.
+ *
+ * <p>Both the TCP data port and the HTTP API bind only to loopback; see the
+ * project README's Security section.
+ */
 public final class ProducerService {
     private static final int MAX_CLIENTS = 10;
 
@@ -31,6 +40,14 @@ public final class ProducerService {
         this.config = config;
     }
 
+    /**
+     * CLI entry point for running the producer directly by classname, without
+     * the {@code --mode} flag that {@link Main} requires.
+     *
+     * @param args command-line arguments in {@code --key=value} form; see the
+     *     project README's Producer options
+     * @throws Exception if the service fails to start
+     */
     public static void main(String[] args) throws Exception {
         new ProducerService(ProducerConfig.from(Main.parseArgs(args))).startAndWait();
     }

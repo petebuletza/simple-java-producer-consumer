@@ -30,14 +30,18 @@ The producer and consumer are separate JVM processes but use the same JAR.
 Requires JDK 26.
 
 ```bash
-./gradlew clean test jar
+./gradlew clean test jar javadocJar
 ```
 
-The executable JAR is:
+The executable JAR and its accompanying `-javadoc.jar` are:
 
 ```text
 build/libs/producer-consumer-service-1.0.0.jar
+build/libs/producer-consumer-service-1.0.0-javadoc.jar
 ```
+
+`./gradlew javadoc` generates the HTML docs alone, under `build/docs/javadoc/`. The release
+workflow publishes both jars, plus a SHA-256 checksum for each, as GitHub Release assets.
 
 Run:
 

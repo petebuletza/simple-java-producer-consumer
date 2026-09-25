@@ -16,7 +16,7 @@ Every merge to `main` runs the release workflow. The workflow derives the next p
 
 `v1.0.0 -> v1.0.1 -> v1.0.2 ...`
 
-It rebuilds/tests from `main`, creates the tag, and publishes the JAR and SHA-256 checksum as GitHub Release assets.
+It rebuilds/tests from `main`, creates the tag, and publishes the JAR, the `-javadoc.jar`, and a SHA-256 checksum for each as GitHub Release assets.
 
 ## Important
 

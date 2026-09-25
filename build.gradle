@@ -42,3 +42,20 @@ tasks.named('jar') {
 tasks.named('run') {
     standardInput = System.in
 }
+
+tasks.named('javadoc', Javadoc) {
+    options.encoding = 'UTF-8'
+    options.docTitle = "producer-consumer-service ${project.version} API"
+    options.windowTitle = "producer-consumer-service ${project.version} API"
+}
+
+tasks.register('javadocJar', Jar) {
+    dependsOn tasks.javadoc
+    archiveBaseName = 'producer-consumer-service'
+    archiveClassifier = 'javadoc'
+    from tasks.javadoc.destinationDir
+}
+
+tasks.named('assemble') {
+    dependsOn tasks.javadocJar
+}

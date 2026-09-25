@@ -7,6 +7,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Runs the consumer role: connects to a producer's TCP data port, parses each
+ * {@link DataItem} off the wire, and exposes an HTTP API for health,
+ * statistics, and shutdown. Reconnects automatically if the producer is
+ * unavailable or the connection drops.
+ */
 public final class ConsumerService {
     private final ConsumerConfig config;
     private final Stats stats = new Stats();
@@ -17,6 +23,14 @@ public final class ConsumerService {
         this.config = config;
     }
 
+    /**
+     * CLI entry point for running the consumer directly by classname, without
+     * the {@code --mode} flag that {@link Main} requires.
+     *
+     * @param args command-line arguments in {@code --key=value} form; see the
+     *     project README's Consumer options
+     * @throws Exception if the service fails to start
+     */
     public static void main(String[] args) throws Exception {
         new ConsumerService(ConsumerConfig.from(Main.parseArgs(args))).startAndWait();
     }

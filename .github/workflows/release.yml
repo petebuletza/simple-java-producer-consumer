@@ -45,14 +45,15 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=v$version" >> "$GITHUB_OUTPUT"
       - name: Build and test
-        run: ./gradlew clean test jar -Pversion=${{ steps.version.outputs.version }}
+        run: ./gradlew clean test jar javadocJar -Pversion=${{ steps.version.outputs.version }}
       - name: Generate SHA-256
         shell: bash
         run: |
           set -euo pipefail
-          jar_file="$(find build/libs -maxdepth 1 -type f -name '*.jar' | head -n 1)"
-          sha256sum "$jar_file" > "${jar_file}.sha256"
-          cat "${jar_file}.sha256"
+          for jar_file in build/libs/*.jar; do
+            sha256sum "$jar_file" > "${jar_file}.sha256"
+            cat "${jar_file}.sha256"
+          done
       - name: Create release tag
         run: |
           git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.version }}" "${GITHUB_SHA}"

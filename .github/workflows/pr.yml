@@ -27,7 +27,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Build and test
-        run: ./gradlew clean test jar -Pversion=0.0.0-pr.${{ github.event.pull_request.number }}.${{ github.sha }}
+        run: ./gradlew clean test jar javadocJar -Pversion=0.0.0-pr.${{ github.event.pull_request.number }}.${{ github.sha }}
       - name: Upload PR binary
         uses: actions/upload-artifact@v4
         with:
