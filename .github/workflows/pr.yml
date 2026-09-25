@@ -27,7 +27,20 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Build and test
-        run: ./gradlew clean test jar javadocJar -Pversion=0.0.0-pr.${{ github.event.pull_request.number }}.${{ github.sha }}
+        run: ./gradlew clean test jacocoTestReport jar javadocJar -Pversion=0.0.0-pr.${{ github.event.pull_request.number }}.${{ github.sha }}
+      - name: Coverage summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          counter="$(grep -o '<counter type="LINE"[^/]*/>' build/reports/jacoco/test/jacocoTestReport.xml | tail -n 1)"
+          missed="$(echo "$counter" | sed -n 's/.*missed="\([0-9]*\)".*/\1/p')"
+          covered="$(echo "$counter" | sed -n 's/.*covered="\([0-9]*\)".*/\1/p')"
+          total=$((missed + covered))
+          pct="$(awk -v c="$covered" -v t="$total" 'BEGIN { printf "%.1f", (t > 0 ? c / t * 100 : 0) }')"
+          {
+            echo "### Code coverage"
+            echo "Line coverage: **${pct}%** (${covered}/${total} lines)"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload PR binary
         uses: actions/upload-artifact@v4
         with:
@@ -35,5 +48,6 @@ jobs:
           path: |
             build/libs/*.jar
             build/reports/tests/test/
+            build/reports/jacoco/test/
           if-no-files-found: error
           retention-days: 30
