@@ -72,6 +72,9 @@ Example:
 
 ```bash
 java -jar build/libs/producer-consumer-service-1.0.0.jar   --mode=producer   --frequency-ms=250   --data-port=9000   --api-port=8080
+
+# equivalent, run directly by classname instead of the jar:
+java -cp build/classes/java/main com.example.datapipe.ProducerService   --frequency-ms=250   --data-port=9000   --api-port=8080
 ```
 
 ## Consumer options
@@ -89,6 +92,9 @@ Example:
 
 ```bash
 java -jar build/libs/producer-consumer-service-1.0.0.jar   --mode=consumer   --producer-port=9000   --api-port=8081
+
+# equivalent, run directly by classname instead of the jar:
+java -cp build/classes/java/main com.example.datapipe.ConsumerService   --producer-port=9000   --api-port=8081
 ```
 
 ## APIs
