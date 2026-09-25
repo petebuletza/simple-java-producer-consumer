@@ -16,7 +16,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-final class ProducerService {
+public final class ProducerService {
     private static final int MAX_CLIENTS = 10;
 
     private final ProducerConfig config;
@@ -29,6 +29,10 @@ final class ProducerService {
 
     ProducerService(ProducerConfig config) {
         this.config = config;
+    }
+
+    public static void main(String[] args) throws Exception {
+        new ProducerService(ProducerConfig.from(Main.parseArgs(args))).startAndWait();
     }
 
     void startAndWait() throws Exception {

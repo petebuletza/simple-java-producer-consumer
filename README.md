@@ -48,6 +48,15 @@ java -jar build/libs/producer-consumer-service-1.0.0.jar --mode=consumer
 
 The consumer may be started before the producer; it will retry the TCP connection.
 
+`ProducerService` and `ConsumerService` each also have their own `main`, so either can be run
+directly by classname from compiled classes instead of the jar, with no `--mode` flag needed
+since the classname itself picks the mode:
+
+```bash
+java -cp build/classes/java/main com.example.datapipe.ProducerService --frequency-ms=500
+java -cp build/classes/java/main com.example.datapipe.ConsumerService
+```
+
 ## Producer options
 
 Both ports are always bound to `127.0.0.1` — see [Security](#security).

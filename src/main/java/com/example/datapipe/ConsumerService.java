@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-final class ConsumerService {
+public final class ConsumerService {
     private final ConsumerConfig config;
     private final Stats stats = new Stats();
     private final AtomicBoolean running = new AtomicBoolean();
@@ -15,6 +15,10 @@ final class ConsumerService {
 
     ConsumerService(ConsumerConfig config) {
         this.config = config;
+    }
+
+    public static void main(String[] args) throws Exception {
+        new ConsumerService(ConsumerConfig.from(Main.parseArgs(args))).startAndWait();
     }
 
     void startAndWait() throws Exception {
