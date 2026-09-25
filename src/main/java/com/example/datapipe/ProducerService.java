@@ -8,8 +8,10 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,9 +56,9 @@ final class ProducerService {
             try {
                 Socket socket = serverSocket.accept();
                 socket.setTcpNoDelay(true);
-                Client client = new Client(socket);
+                Client client = new Client(socket, clients);
                 clients.add(client);
-                Thread.startVirtualThread(() -> client.run());
+                client.start();
             } catch (IOException e) {
                 if (running.get()) {
                     System.err.println("Accept error: " + e.getMessage());
@@ -71,8 +73,10 @@ final class ProducerService {
         stats.record(item, item.producedAt());
         String line = item.toWireLine();
         for (Client client : clients) {
-            if (!client.send(line)) {
-                clients.remove(client);
+            // Non-blocking: a client whose outbox is full is too slow to keep up and gets
+            // dropped here instead of blocking this shared scheduler thread (and therefore
+            // every other client) on a stalled socket write.
+            if (!client.offer(line)) {
                 client.close();
             }
         }
@@ -90,32 +94,47 @@ final class ProducerService {
     }
 
     private static final class Client {
-        private final Socket socket;
-        private BufferedWriter writer;
+        // Bounds how far a client may lag behind before it's treated as unresponsive
+        // and disconnected, rather than letting its backlog grow without limit.
+        private static final int OUTBOX_CAPACITY = 1024;
 
-        Client(Socket socket) {
+        private final Socket socket;
+        private final Set<Client> registry;
+        private final BlockingQueue<String> outbox = new LinkedBlockingQueue<>(OUTBOX_CAPACITY);
+        private final AtomicBoolean closed = new AtomicBoolean();
+
+        Client(Socket socket, Set<Client> registry) {
             this.socket = socket;
-            try {
-                writer = new BufferedWriter(new OutputStreamWriter(
-                        socket.getOutputStream(), StandardCharsets.UTF_8));
-            } catch (IOException e) {
+            this.registry = registry;
+        }
+
+        void start() {
+            Thread.startVirtualThread(this::writeLoop);
+            Thread.startVirtualThread(this::readLoop);
+        }
+
+        boolean offer(String line) {
+            return outbox.offer(line);
+        }
+
+        private void writeLoop() {
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8))) {
+                while (!closed.get()) {
+                    String line = outbox.poll(500, TimeUnit.MILLISECONDS);
+                    if (line == null) continue;
+                    writer.write(line);
+                    writer.newLine();
+                    writer.flush();
+                }
+            } catch (IOException | InterruptedException e) {
+                if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            } finally {
                 close();
             }
         }
 
-        synchronized boolean send(String line) {
-            if (writer == null) return false;
-            try {
-                writer.write(line);
-                writer.newLine();
-                writer.flush();
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
-        }
-
-        void run() {
+        private void readLoop() {
             try {
                 socket.getInputStream().readAllBytes();
             } catch (IOException ignored) {
@@ -125,7 +144,10 @@ final class ProducerService {
         }
 
         void close() {
-            try { socket.close(); } catch (IOException ignored) {}
+            if (closed.compareAndSet(false, true)) {
+                registry.remove(this);
+                try { socket.close(); } catch (IOException ignored) {}
+            }
         }
     }
 }
