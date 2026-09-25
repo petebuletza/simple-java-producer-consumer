@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -25,8 +26,22 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+jacoco {
+    // 0.8.15 is the first release with official Java 26 class file support.
+    toolVersion = '0.8.15'
+}
+
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy tasks.jacocoTestReport
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.test
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
 
 tasks.named('jar') {

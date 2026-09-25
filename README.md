@@ -43,6 +43,12 @@ build/libs/producer-consumer-service-1.0.0-javadoc.jar
 `./gradlew javadoc` generates the HTML docs alone, under `build/docs/javadoc/`. The release
 workflow publishes both jars, plus a SHA-256 checksum for each, as GitHub Release assets.
 
+`./gradlew test` runs JaCoCo-instrumented and always finishes by generating a coverage report
+under `build/reports/jacoco/test/` (HTML at `html/index.html`, machine-readable at
+`jacocoTestReport.xml`); run `./gradlew jacocoTestReport` directly to (re)generate it without
+rerunning the build. The PR workflow uploads that report alongside the test results and posts
+the overall line-coverage percentage to the job's step summary.
+
 Run:
 
 ```bash
