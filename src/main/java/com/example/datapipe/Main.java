@@ -2,6 +2,7 @@ package com.example.datapipe;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public final class Main {
@@ -13,7 +14,7 @@ public final class Main {
         Map<String, String> options = parseArgs(args);
         String mode = required(options, "mode");
 
-        switch (mode.toLowerCase()) {
+        switch (mode.toLowerCase(Locale.ROOT)) {
             case "producer" -> new ProducerService(ProducerConfig.from(options)).startAndWait();
             case "consumer" -> new ConsumerService(ConsumerConfig.from(options)).startAndWait();
             default -> throw new IllegalArgumentException("mode must be 'producer' or 'consumer'");
