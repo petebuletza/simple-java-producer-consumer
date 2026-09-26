@@ -44,6 +44,25 @@ tasks.named('jacocoTestReport') {
     }
 }
 
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.test
+    violationRules {
+        rule {
+            limit {
+                // Kept in sync with the "Line coverage" percentage the PR workflow's
+                // Coverage summary step reports, so what's gated and what's shown agree.
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.90
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.jacocoTestCoverageVerification
+}
+
 tasks.named('jar') {
     archiveBaseName = 'producer-consumer-service'
     manifest {

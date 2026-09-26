@@ -49,6 +49,11 @@ under `build/reports/jacoco/test/` (HTML at `html/index.html`, machine-readable 
 rerunning the build. The PR workflow uploads that report alongside the test results and posts
 the overall line-coverage percentage to the job's step summary.
 
+**Line coverage must be at least 90%** — `./gradlew jacocoTestCoverageVerification` (also
+wired into `check`, so `./gradlew build` enforces it too) fails the build otherwise. Both the
+PR and release workflows run it as part of `./gradlew clean test ...`, so a coverage drop below
+90% fails CI and blocks a release the same way a failing test would.
+
 Run:
 
 ```bash

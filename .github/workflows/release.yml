@@ -45,7 +45,7 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=v$version" >> "$GITHUB_OUTPUT"
       - name: Build and test
-        run: ./gradlew clean test jar javadocJar -Pversion=${{ steps.version.outputs.version }}
+        run: ./gradlew clean test jacocoTestReport jacocoTestCoverageVerification jar javadocJar -Pversion=${{ steps.version.outputs.version }}
       - name: Generate SHA-256
         shell: bash
         run: |

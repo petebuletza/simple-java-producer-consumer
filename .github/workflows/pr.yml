@@ -27,8 +27,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Build and test
-        run: ./gradlew clean test jacocoTestReport jar javadocJar -Pversion=0.0.0-pr.${{ github.event.pull_request.number }}.${{ github.sha }}
+        run: ./gradlew clean test jacocoTestReport jacocoTestCoverageVerification jar javadocJar -Pversion=0.0.0-pr.${{ github.event.pull_request.number }}.${{ github.sha }}
       - name: Coverage summary
+        if: ${{ !cancelled() }}
         shell: bash
         run: |
           set -euo pipefail
@@ -37,11 +38,18 @@ jobs:
           covered="$(echo "$counter" | sed -n 's/.*covered="\([0-9]*\)".*/\1/p')"
           total=$((missed + covered))
           pct="$(awk -v c="$covered" -v t="$total" 'BEGIN { printf "%.1f", (t > 0 ? c / t * 100 : 0) }')"
+          meets_gate="$(awk -v c="$covered" -v t="$total" 'BEGIN { print (t > 0 && c / t >= 0.90) ? "1" : "0" }')"
           {
             echo "### Code coverage"
             echo "Line coverage: **${pct}%** (${covered}/${total} lines)"
+            if [ "$meets_gate" = "1" ]; then
+              echo ":white_check_mark: Meets the 90% coverage gate."
+            else
+              echo ":x: Below the 90% coverage gate."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload PR binary
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: producer-consumer-service-pr-${{ github.event.pull_request.number }}-${{ github.sha }}
@@ -49,5 +57,5 @@ jobs:
             build/libs/*.jar
             build/reports/tests/test/
             build/reports/jacoco/test/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
