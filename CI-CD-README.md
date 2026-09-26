@@ -4,11 +4,11 @@ This setup uses GitHub Actions only; it does not use GitHub Deployments or Envir
 
 ## PRs
 
-Every opened, reopened, or updated PR runs compile/test/package. A PR update cancels an obsolete in-progress build for that PR. Successful builds are uploaded as uniquely named GitHub Actions artifacts for 30 days:
+Every opened, reopened, or updated PR runs compile/test/package, including a JaCoCo line-coverage check that must stay at or above 90% (see `jacocoTestCoverageVerification` in `build.gradle`) — the build fails the same way it would for a failing test. A PR update cancels an obsolete in-progress build for that PR. Successful builds are uploaded as uniquely named GitHub Actions artifacts for 30 days:
 
 `producer-consumer-service-pr-<PR>-<commit-sha>`
 
-Configure the `Build and test PR` check as a required status check for `main`.
+`main` is protected: the `Build and test PR` check (coverage gate included) is required and must be up to date with `main` before merging, and this applies to admins too — there is no direct push to `main`, for anyone.
 
 ## Main
 
@@ -16,7 +16,7 @@ Every merge to `main` runs the release workflow. The workflow derives the next p
 
 `v1.0.0 -> v1.0.1 -> v1.0.2 ...`
 
-It rebuilds/tests from `main`, creates the tag, and publishes the JAR, the `-javadoc.jar`, and a SHA-256 checksum for each as GitHub Release assets.
+It rebuilds/tests from `main` (including the same 90% coverage gate as the PR workflow — a regression here blocks the tag and release too), creates the tag, and publishes the JAR, the `-javadoc.jar`, and a SHA-256 checksum for each as GitHub Release assets.
 
 ## Important
 
